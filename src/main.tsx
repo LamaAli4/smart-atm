@@ -1,10 +1,16 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.tsx'
+import React, { Suspense } from "react";
+import ReactDOM from "react-dom/client";
+import Loading from "./components/loading";
+import "./index.css";
+import { RouterProvider, createBrowserRouter } from "react-router-dom";
+import { appRoutes } from "./router/section";
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-)
+const router = createBrowserRouter(appRoutes);
+
+ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
+  <React.StrictMode>
+    <Suspense fallback={<Loading />}>
+      <RouterProvider router={router} />
+    </Suspense>
+  </React.StrictMode>
+);
