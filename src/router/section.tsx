@@ -10,7 +10,7 @@ const Settings = lazy(() => import("@/pages/settings"));
 const WatchList = lazy(() => import("@/pages/watch-list"));
 const NotFound = lazy(() => import("@/pages/page-not-found"));
 
-export const appRoutes = [
+export const RoutesSection = [
   {
     path: "/",
     element: <Navigate to="/dashboard" replace />,

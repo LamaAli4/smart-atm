@@ -3,9 +3,9 @@ import ReactDOM from "react-dom/client";
 import Loading from "./components/loading";
 import "./index.css";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
-import { appRoutes } from "./router/section";
+import { RoutesSection } from "./router/section";
 
-const router = createBrowserRouter(appRoutes);
+const router = createBrowserRouter(RoutesSection);
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
