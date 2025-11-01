@@ -1,7 +1,9 @@
 import { lazy } from "react";
 import MainLayout from "@/layouts/main-layout";
+import ProtectedRoute from "./protected-route";
 import { Navigate } from "react-router-dom";
 
+const Login = lazy(() => import("@/pages/login"));
 const Dashboard = lazy(() => import("@/pages/dashboard"));
 const Deposit = lazy(() => import("@/pages/deposit"));
 const Withdraw = lazy(() => import("@/pages/withdraw"));
@@ -12,13 +14,22 @@ const NotFound = lazy(() => import("@/pages/page-not-found"));
 
 export const RoutesSection = [
   {
-    path: "/",
-    element: <Navigate to="/dashboard" replace />,
+    path: "/login",
+    element: <Login />,
   },
+
   {
     path: "/",
-    element: <MainLayout />,
+    element: (
+      <ProtectedRoute>
+        <MainLayout />
+      </ProtectedRoute>
+    ),
     children: [
+      {
+        index: true,
+        element: <Navigate to="/dashboard" replace />,
+      },
       {
         path: "dashboard",
         element: <Dashboard />,
@@ -45,5 +56,6 @@ export const RoutesSection = [
       },
     ],
   },
+
   { path: "*", element: <NotFound /> },
 ];
