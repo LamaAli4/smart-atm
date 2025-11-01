@@ -1,4 +1,4 @@
-import { Home, DollarSign, Minus, Clock, Star, Settings } from "lucide-react";
+import { Home, DollarSign, Minus, Clock, Star } from "lucide-react";
 
 export interface NavItem {
   label: string;
@@ -32,11 +32,5 @@ export const mainNav: NavItem[] = [
     label: "watch-list",
     path: "/watch-list",
     icon: Star,
-    },
-  
-  {
-    label: "Settings",
-    path: "/settings",
-    icon: Settings,
   },
 ];

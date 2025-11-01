@@ -7,14 +7,17 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { RoutesSection } from "./router/section";
 import { AuthProvider } from "./context/auth-context";
 import { ToastContainer } from "react-toastify";
+import { ThemeProvider } from "./components/theme-provider";
 
 const router = createBrowserRouter(RoutesSection);
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <AuthProvider>
-      <Suspense fallback={<Loading />}>
-        <RouterProvider router={router} />
+    <ThemeProvider>
+      <AuthProvider>
+        <Suspense fallback={<Loading />}>
+          <RouterProvider router={router} />
+        </Suspense>
         <ToastContainer
           position="top-center"
           autoClose={2000}
@@ -26,7 +29,7 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
           pauseOnHover
           theme="colored"
         />
-      </Suspense>
-    </AuthProvider>
+      </AuthProvider>
+    </ThemeProvider>
   </React.StrictMode>
 );
