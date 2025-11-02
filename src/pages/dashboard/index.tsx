@@ -1,27 +1,24 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/context/auth-context"; // بدّلي لـ "../../context/auth-context" لو الإلياس @ مش شغال
-
+import { useAuth } from "@/context/auth-context"; 
 export default function DashboardPage() {
-  const { user } = useAuth();            // جاي من auth-context.tsx
+  const { user } = useAuth();        
   const navigate = useNavigate();
   const [showBirthday, setShowBirthday] = useState(false);
 
-  // لو مافي user (مو مسجّل دخول) رجّعيه للّوجين
   useEffect(() => {
     if (!user) navigate("/login");
   }, [user, navigate]);
 
-  // رصيد المستخدم (رقم آمن)
+  // user's balance (safe way)
   const currentBalance = useMemo(
     () => Number(user?.balance ?? 0),
     [user?.balance]
   );
 
-  // لون الرصيد حسب Trello: أخضر > 0، أحمر = 0 (وأقل من 0 برضه أحمر)
+  // color depends on balance
   const balanceColor = currentBalance > 0 ? "text-green-500" : "text-red-500";
 
-  // بوب-أب عيد الميلاد مرة واحدة في الجلسة
   useEffect(() => {
     const birth = user?.birthday;
     if (!birth) return;
@@ -30,7 +27,7 @@ export default function DashboardPage() {
     if (sessionStorage.getItem(key)) return;
 
     const today = new Date();
-    const [, m, d] = String(birth).split("-").map(Number); // نتجاهل السنة
+    const [, m, d] = String(birth).split("-").map(Number); //ignore year
     const isBirthday = today.getMonth() + 1 === m && today.getDate() === d;
 
     if (isBirthday) {
@@ -49,7 +46,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center gap-6 p-8">
-      {/* بطاقة المستخدم */}
+      {/*cart user */}
       <div className="w-full max-w-2xl bg-card text-card-foreground rounded-2xl shadow p-4 flex items-center gap-4">
         {user?.profile_img ? (
           <img
@@ -69,7 +66,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* الرصيد */}
+      {/* balance */}
       <div className="w-full max-w-2xl bg-card text-card-foreground rounded-2xl shadow p-6 text-center">
         <p className="text-sm text-muted-foreground m-0">Current Balance</p>
 
@@ -85,39 +82,39 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* الأزرار السريعة */}
+      {/* btns*/}
       <div className="w-full max-w-2xl grid grid-cols-2 md:grid-cols-4 gap-4">
         <button
           className="btn"
           onClick={() => navigate("/deposit")}
           aria-label="Deposit money"
         >
-          ➕ Deposit
+           Deposit
         </button>
         <button
           className="btn"
           onClick={() => navigate("/withdraw")}
           aria-label="Withdraw money"
         >
-          ➖ Withdraw
+           Withdraw
         </button>
         <button
           className="btn"
           onClick={() => navigate("/history")}
           aria-label="Transactions history"
         >
-          🧾 History
+           History
         </button>
         <button
           className="btn"
           onClick={() => navigate("/settings")}
           aria-label="Settings"
         >
-          ⚙️ Settings
+           Settings
         </button>
       </div>
 
-      {/* بوب-أب عيد الميلاد */}
+      {}
       {showBirthday && (
         <div
           className="fixed inset-0 bg-black/60 flex items-center justify-center px-4"
@@ -128,9 +125,9 @@ export default function DashboardPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-2xl mb-2">
-              🎉 Happy Birthday, {user?.first_name || "dear"}! 🎂
+               Happy Birthday, {user?.first_name || "dear"}! 
             </h3>
-            <p>Wishing you a day full of happiness and joy! 💖</p>
+            <p>Wishing you a day full of happiness and joy! </p>
             <button className="mt-4 btn" onClick={() => setShowBirthday(false)}>
               Close
             </button>
