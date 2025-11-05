@@ -1,27 +1,16 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/auth-context";
-import type { Transaction, User } from "@/types/user";
 import { updateUser } from "@/services/api";
+import type { Transaction } from "@/types/user";
 
-export type UseDepositReturn = {
-  amount: string;
-  setAmount: (v: string) => void;
-  isLoading: boolean;
-  showSuccess: boolean;
-  lastTransaction: Transaction | null;
-  handleDeposit: () => Promise<void>;
-  handleAmountChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  setPreset: (v: number) => void;
-  user: User | null;
-};
-
-export function useDeposit(): UseDepositReturn {
-  const navigate = useNavigate();
+export function useWithdraw() {
   const { user, setUser } = useAuth();
+  const navigate = useNavigate();
   const [amount, setAmount] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
+
   const [showSuccess, setShowSuccess] = useState(false);
   const [lastTransaction, setLastTransaction] = useState<Transaction | null>(
     null
@@ -29,37 +18,38 @@ export function useDeposit(): UseDepositReturn {
 
   const validateAmount = (value: string): string | null => {
     const numValue = parseFloat(value);
+    const currentBalance = user?.balance ?? 0;
 
     if (!value || value.trim() === "") return "Please enter an amount";
     if (isNaN(numValue)) return "Please enter a valid number";
     if (numValue <= 0) return "Amount must be greater than zero";
-    if (numValue > 1000000) return "Amount cannot exceed 1,000,000 ILS";
+    if (numValue > currentBalance)
+      return `Insufficient funds. Your balance is ${currentBalance.toFixed(
+        2
+      )} ILS`;
+    if (numValue > 50000) return "Maximum withdrawal amount is 50,000 ILS";
 
     return null;
   };
 
-  const handleDeposit = async () => {
+  const handleWithdraw = async () => {
     const error = validateAmount(amount);
     if (error) {
-      toast.error(error, { autoClose: 2500 });
+      toast.error(error);
       return;
     }
 
-    if (!user) {
-      navigate("/");
-      return;
-    }
-
+    if (!user) return;
     setIsLoading(true);
 
     try {
-      const depositAmount = parseFloat(amount);
-      const newBalance = user.balance + depositAmount;
+      const withdrawAmount = parseFloat(amount);
+      const newBalance = user.balance - withdrawAmount;
 
       const transaction: Transaction = {
         id: Date.now(),
-        type: "Deposit",
-        amount: depositAmount,
+        type: "Withdraw",
+        amount: withdrawAmount,
         currency: "ILS",
         date: new Date().toISOString(),
       };
@@ -70,12 +60,7 @@ export function useDeposit(): UseDepositReturn {
         transactions: [...user.transactions, transaction],
       };
 
-      const updatedFromServer = await updateUser(user.id, updatedUser).catch(
-        (err) => {
-          console.warn("updateUser failed, falling back to local update", err);
-          return null;
-        }
-      );
+      const updatedFromServer = await updateUser(user.id, updatedUser);
 
       if (updatedFromServer) {
         setUser(updatedFromServer);
@@ -85,23 +70,19 @@ export function useDeposit(): UseDepositReturn {
         localStorage.setItem("user", JSON.stringify(updatedUser));
       }
 
-      toast.success(`Deposited ${depositAmount.toFixed(2)} ILS`, {
-        autoClose: 2000,
-      });
-
       setLastTransaction(transaction);
       setShowSuccess(true);
+
+      toast.success(`Successfully withdrew ${withdrawAmount.toFixed(2)} ILS`);
       setAmount("");
 
       setTimeout(() => {
         setShowSuccess(false);
         navigate("/dashboard");
       }, 2000);
-    } catch (err) {
-      console.error("Deposit error:", err);
-      toast.error("Failed to process deposit. Please try again.", {
-        autoClose: 3000,
-      });
+    } catch (error) {
+      console.error("Withdraw error:", error);
+      toast.error("Failed to process withdrawal. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -114,17 +95,21 @@ export function useDeposit(): UseDepositReturn {
     }
   };
 
-  const setPreset = (v: number) => setAmount(v.toString());
+  const getAvailableQuickAmounts = () => {
+    const amounts = [50, 100, 500, 1000];
+    const currentBalance = user?.balance ?? 0;
+    return amounts.filter((amt) => amt <= currentBalance);
+  };
 
   return {
     amount,
-    setAmount,
     isLoading,
+    currentBalance: user?.balance ?? 0,
+    handleWithdraw,
+    handleAmountChange,
+    getAvailableQuickAmounts,
     showSuccess,
     lastTransaction,
-    handleDeposit,
-    handleAmountChange,
-    setPreset,
     user,
   };
 }
