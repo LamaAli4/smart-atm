@@ -1,38 +1,59 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/context/auth-context"; 
+import { useAuth } from "@/context/auth-context";
+import { ProfileCard } from "./components/ProfileCard";
+import { QuickStats } from "./components/QuickStats";
+import { BalanceCard } from "./components/BalanceCard";
+import { QuickActions } from "./components/QuickActions";
+import { BirthdayModal } from "./components/BirthdayModal";
+
 export default function DashboardPage() {
-  const { user } = useAuth();        
-  const navigate = useNavigate();
   const [showBirthday, setShowBirthday] = useState(false);
+  const { user } = useAuth();
 
-  useEffect(() => {
-    if (!user) navigate("/login");
-  }, [user, navigate]);
+  const { monthlyDeposits, monthlyWithdraws } = useMemo(() => {
+    if (!user?.transactions) return { monthlyDeposits: 0, monthlyWithdraws: 0 };
 
-  // user's balance (safe way)
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now);
+    thirtyDaysAgo.setDate(now.getDate() - 30);
+
+    return user.transactions.reduce(
+      (acc, transaction) => {
+        const transactionDate = new Date(transaction.date);
+        if (transactionDate >= thirtyDaysAgo) {
+          if (transaction.type === "Deposit") {
+            acc.monthlyDeposits += transaction.amount;
+          } else if (transaction.type === "Withdraw") {
+            acc.monthlyWithdraws += transaction.amount;
+          }
+        }
+        return acc;
+      },
+      { monthlyDeposits: 0, monthlyWithdraws: 0 }
+    );
+  }, [user?.transactions]);
+
   const currentBalance = useMemo(
     () => Number(user?.balance ?? 0),
     [user?.balance]
   );
 
-  // color depends on balance
   const balanceColor = currentBalance > 0 ? "text-green-500" : "text-red-500";
 
   useEffect(() => {
     const birth = user?.birthday;
     if (!birth) return;
 
-    const key = "birthdayShown";
-    if (sessionStorage.getItem(key)) return;
+    const key = `birthdayShown-${user?.id ?? "guest"}`;
+    if (localStorage.getItem(key)) return;
 
     const today = new Date();
-    const [, m, d] = String(birth).split("-").map(Number); //ignore year
+    const [, m, d] = String(birth).split("-").map(Number);
     const isBirthday = today.getMonth() + 1 === m && today.getDate() === d;
 
     if (isBirthday) {
       setShowBirthday(true);
-      sessionStorage.setItem(key, "1");
+      localStorage.setItem(key, "1");
     }
   }, [user]);
 
@@ -45,95 +66,34 @@ export default function DashboardPage() {
   }, [user]);
 
   return (
-    <div className="min-h-screen flex flex-col items-center gap-6 p-8">
-      {/*cart user */}
-      <div className="w-full max-w-2xl bg-card text-card-foreground rounded-2xl shadow p-4 flex items-center gap-4">
-        {user?.profile_img ? (
-          <img
-            src={user.profile_img}
-            alt={fullName}
-            className="w-16 h-16 rounded-full object-cover border"
-            onError={(e) => (e.currentTarget.style.visibility = "hidden")}
+    <div className="min-h-screen p-8">
+      <div className="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="lg:col-span-3 space-y-6">
+          <ProfileCard
+            user={user}
+            fullName={fullName}
+            currentBalance={currentBalance}
           />
-        ) : (
-          <div className="w-16 h-16 rounded-full border grid place-items-center text-sm text-muted-foreground">
-            N/A
-          </div>
-        )}
-        <div>
-          <p className="text-muted-foreground m-0">Welcome back,</p>
-          <h2 className="text-xl font-semibold m-0">{fullName}</h2>
-        </div>
-      </div>
-
-      {/* balance */}
-      <div className="w-full max-w-2xl bg-card text-card-foreground rounded-2xl shadow p-6 text-center">
-        <p className="text-sm text-muted-foreground m-0">Current Balance</p>
-
-        <div className="mt-1 flex items-center justify-center gap-2">
-          <span
-            className={`inline-block h-2.5 w-2.5 rounded-full ${
-              currentBalance > 0 ? "bg-green-500" : "bg-red-500"
-            }`}
+          <QuickStats
+            monthlyDeposits={monthlyDeposits}
+            monthlyWithdraws={monthlyWithdraws}
           />
-          <h1 className={`text-4xl font-bold ${balanceColor}`}>
-            {currentBalance.toLocaleString()} ILS
-          </h1>
+        </div>
+
+        <div className="lg:col-span-9 space-y-6">
+          <BalanceCard
+            currentBalance={currentBalance}
+            balanceColor={balanceColor}
+          />
+          <QuickActions />
         </div>
       </div>
 
-      {/* btns*/}
-      <div className="w-full max-w-2xl grid grid-cols-2 md:grid-cols-4 gap-4">
-        <button
-          className="btn"
-          onClick={() => navigate("/deposit")}
-          aria-label="Deposit money"
-        >
-           Deposit
-        </button>
-        <button
-          className="btn"
-          onClick={() => navigate("/withdraw")}
-          aria-label="Withdraw money"
-        >
-           Withdraw
-        </button>
-        <button
-          className="btn"
-          onClick={() => navigate("/history")}
-          aria-label="Transactions history"
-        >
-           History
-        </button>
-        <button
-          className="btn"
-          onClick={() => navigate("/settings")}
-          aria-label="Settings"
-        >
-           Settings
-        </button>
-      </div>
-
-      {}
-      {showBirthday && (
-        <div
-          className="fixed inset-0 bg-black/60 flex items-center justify-center px-4"
-          onClick={() => setShowBirthday(false)}
-        >
-          <div
-            className="bg-card text-card-foreground rounded-xl shadow p-6 text-center max-w-md w-full"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-2xl mb-2">
-               Happy Birthday, {user?.first_name || "dear"}! 
-            </h3>
-            <p>Wishing you a day full of happiness and joy! </p>
-            <button className="mt-4 btn" onClick={() => setShowBirthday(false)}>
-              Close
-            </button>
-          </div>
-        </div>
-      )}
+      <BirthdayModal
+        isOpen={showBirthday}
+        onClose={() => setShowBirthday(false)}
+        firstName={user?.first_name || ""}
+      />
     </div>
   );
 }
