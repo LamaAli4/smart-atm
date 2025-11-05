@@ -17,6 +17,7 @@ interface AuthContextType {
   logout: () => void;
   loading: boolean;
   user: User | null;
+  setUser: (user: User) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -99,6 +100,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         logout,
         loading,
         user,
+        setUser,
       }}
     >
       {children}
