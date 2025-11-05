@@ -1,5 +1,5 @@
 import { useDeposit } from "./hooks/useDeposit";
-import DepositView from "./components/DepositView";
+import DepositView from "./components/deposit-view";
 
 export default function DepositPage() {
   const deposit = useDeposit();

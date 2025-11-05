@@ -18,6 +18,7 @@ interface AuthContextType {
   loading: boolean;
   user: User | null;
   setUser: (user: User) => void;
+  updateUserBalance: (newBalance: number) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -92,6 +93,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.removeItem("user");
   };
 
+  const updateUserBalance = (newBalance: number) => {
+    if (user) {
+      const updatedUser = { ...user, balance: newBalance };
+      setUser(updatedUser);
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -101,6 +110,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         loading,
         user,
         setUser,
+        updateUserBalance,
       }}
     >
       {children}
@@ -110,7 +120,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within an AuthProvider");
-  return ctx;
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
 };
