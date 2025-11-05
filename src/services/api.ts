@@ -73,3 +73,22 @@ export const fetchUser = async (userId: number): Promise<User | null> => {
     return null;
   }
 };
+
+export const updateUser = async (userId: number, data: Partial<User>) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/${userId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) throw new Error("Failed to update user");
+
+    return await response.json();
+  } catch (error) {
+    console.error("Update user error:", error);
+    return null;
+  }
+};
