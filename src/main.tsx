@@ -6,6 +6,7 @@ import "./index.css";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { RoutesSection } from "./router/section";
 import { AuthProvider } from "./context/auth-context";
+import { WatchlistProvider } from "@/context/watchlist-context";
 import { ToastContainer } from "react-toastify";
 import { ThemeProvider } from "./components/theme-provider";
 
@@ -15,20 +16,22 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <ThemeProvider>
       <AuthProvider>
-        <Suspense fallback={<Loading />}>
-          <RouterProvider router={router} />
-        </Suspense>
-        <ToastContainer
-          position="top-center"
-          autoClose={2000}
-          hideProgressBar={false}
-          newestOnTop
-          closeOnClick
-          pauseOnFocusLoss={false}
-          draggable
-          pauseOnHover
-          theme="colored"
-        />
+        <WatchlistProvider>
+          <Suspense fallback={<Loading />}>
+            <RouterProvider router={router} />
+          </Suspense>
+          <ToastContainer
+            position="top-center"
+            autoClose={2000}
+            hideProgressBar={false}
+            newestOnTop
+            closeOnClick
+            pauseOnFocusLoss={false}
+            draggable
+            pauseOnHover
+            theme="colored"
+          />
+        </WatchlistProvider>
       </AuthProvider>
     </ThemeProvider>
   </React.StrictMode>
