@@ -1,4 +1,4 @@
-import { useDeposit } from "./hooks/useDeposit";
+import { useDeposit } from "./hooks/use-deposit";
 import DepositView from "./components/deposit-view";
 
 export default function DepositPage() {

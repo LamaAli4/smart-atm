@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/context/auth-context";
-import { ProfileCard } from "./components/ProfileCard";
-import { QuickStats } from "./components/QuickStats";
-import { BalanceCard } from "./components/BalanceCard";
-import { QuickActions } from "./components/QuickActions";
-import { BirthdayModal } from "./components/BirthdayModal";
+import { ProfileCard } from "./components/profile-card";
+import { QuickStats } from "./components/quick-stats";
+import { BalanceCard } from "./components/balance-card";
+import { QuickActions } from "./components/quick-actions";
+import { BirthdayModal } from "./components/birthday-modal";
 
 export default function DashboardPage() {
   const [showBirthday, setShowBirthday] = useState(false);

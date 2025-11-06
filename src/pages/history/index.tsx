@@ -1,6 +1,6 @@
 import { ChevronLeft, ChevronRight, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useTransactionHistory } from "./hooks/useTransactionHistory";
+import { useTransactionHistory } from "./hooks/use-transaction-history";
 import { cn } from "@/lib/utils";
 
 export default function HistoryPage() {

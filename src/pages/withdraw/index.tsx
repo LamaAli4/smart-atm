@@ -1,4 +1,4 @@
-import { useWithdraw } from "./hooks/useWithdraw";
+import { useWithdraw } from "./hooks/use-withdraw";
 import { WithdrawView } from "./components/withdraw-view";
 
 export default function Withdraw() {
