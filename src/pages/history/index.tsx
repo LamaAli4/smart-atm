@@ -2,6 +2,7 @@ import { ChevronLeft, ChevronRight, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTransactionHistory } from "./hooks/use-transaction-history";
 import { cn } from "@/lib/utils";
+import Loading from "@/components/loading";
 
 export default function HistoryPage() {
   const {
@@ -13,7 +14,16 @@ export default function HistoryPage() {
     goToNextPage,
     goToPreviousPage,
     isEmpty,
+    isLoading,
   } = useTransactionHistory();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loading />
+      </div>
+    );
+  }
 
   if (isEmpty) {
     return (
@@ -56,13 +66,6 @@ export default function HistoryPage() {
                   <p className="text-sm text-muted-foreground">
                     {formatDate(transaction.date)}
                   </p>
-
-                  {transaction.type === "Transfer" &&
-                    transaction.target_user && (
-                      <p className="text-sm text-muted-foreground">
-                        To: {transaction.target_user}
-                      </p>
-                    )}
                 </div>
               </div>
 
@@ -70,7 +73,6 @@ export default function HistoryPage() {
                 className={cn("font-semibold", {
                   "text-emerald-500": transaction.type === "Deposit",
                   "text-red-500": transaction.type === "Withdraw",
-                  "text-blue-500": transaction.type === "Transfer",
                 })}
               >
                 {transaction.type === "Deposit" ? "+" : "-"}

@@ -5,33 +5,44 @@ import { QuickStats } from "./components/quick-stats";
 import { BalanceCard } from "./components/balance-card";
 import { QuickActions } from "./components/quick-actions";
 import { BirthdayModal } from "./components/birthday-modal";
+import type { Transaction } from "@/types/user";
+import { fetchUserTransactions } from "@/services/api";
 
 export default function DashboardPage() {
   const [showBirthday, setShowBirthday] = useState(false);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const { user } = useAuth();
 
+  useEffect(() => {
+    if (!user?.id) return;
+    fetchUserTransactions(String(user.id))
+      .then(setTransactions)
+      .catch((err) => {
+        console.error("Error fetching transactions:", err);
+        setTransactions([]);
+      });
+  }, [user?.id]);
+
   const { monthlyDeposits, monthlyWithdraws } = useMemo(() => {
-    if (!user?.transactions) return { monthlyDeposits: 0, monthlyWithdraws: 0 };
+    if (transactions.length === 0)
+      return { monthlyDeposits: 0, monthlyWithdraws: 0 };
 
     const now = new Date();
     const thirtyDaysAgo = new Date(now);
     thirtyDaysAgo.setDate(now.getDate() - 30);
 
-    return user.transactions.reduce(
-      (acc, transaction) => {
-        const transactionDate = new Date(transaction.date);
-        if (transactionDate >= thirtyDaysAgo) {
-          if (transaction.type === "Deposit") {
-            acc.monthlyDeposits += transaction.amount;
-          } else if (transaction.type === "Withdraw") {
-            acc.monthlyWithdraws += transaction.amount;
-          }
+    return transactions.reduce(
+      (acc, t) => {
+        const date = new Date(t.date);
+        if (date >= thirtyDaysAgo) {
+          if (t.type === "Deposit") acc.monthlyDeposits += t.amount;
+          if (t.type === "Withdraw") acc.monthlyWithdraws += t.amount;
         }
         return acc;
       },
       { monthlyDeposits: 0, monthlyWithdraws: 0 }
     );
-  }, [user?.transactions]);
+  }, [transactions]);
 
   const currentBalance = useMemo(
     () => Number(user?.balance ?? 0),

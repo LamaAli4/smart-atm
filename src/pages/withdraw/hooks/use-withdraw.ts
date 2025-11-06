@@ -1,16 +1,13 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/auth-context";
-import { updateUser } from "@/services/api";
+import { updateUser, addTransaction } from "@/services/api";
 import type { Transaction } from "@/types/user";
 
 export function useWithdraw() {
   const { user, setUser } = useAuth();
-  const navigate = useNavigate();
   const [amount, setAmount] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
-
   const [showSuccess, setShowSuccess] = useState(false);
   const [lastTransaction, setLastTransaction] = useState<Transaction | null>(
     null
@@ -54,10 +51,15 @@ export function useWithdraw() {
         date: new Date().toISOString(),
       };
 
+      const added = await addTransaction(user.id.toString(), transaction);
+
+      if (!added) {
+        throw new Error("Failed to add transaction to server");
+      }
+
       const updatedUser = {
         ...user,
         balance: newBalance,
-        transactions: [...user.transactions, transaction],
       };
 
       const updatedFromServer = await updateUser(user.id, updatedUser);
@@ -72,14 +74,10 @@ export function useWithdraw() {
 
       setLastTransaction(transaction);
       setShowSuccess(true);
-
       toast.success(`Successfully withdrew ${withdrawAmount.toFixed(2)} ILS`);
       setAmount("");
 
-      setTimeout(() => {
-        setShowSuccess(false);
-        navigate("/dashboard");
-      }, 2000);
+      setTimeout(() => setShowSuccess(false), 2000);
     } catch (error) {
       console.error("Withdraw error:", error);
       toast.error("Failed to process withdrawal. Please try again.");

@@ -1,7 +1,6 @@
-import type { User } from "@/types/user";
+import type { Transaction, User } from "@/types/user";
 
 const API_BASE_URL = "https://6905f0b7ee3d0d14c1343396.mockapi.io/users";
-
 export interface LoginResponse {
   success: boolean;
   user?: User;
@@ -90,5 +89,78 @@ export const updateUser = async (userId: number, data: Partial<User>) => {
   } catch (error) {
     console.error("Update user error:", error);
     return null;
+  }
+};
+
+export const fetchUserTransactions = async (
+  userId: string
+): Promise<Transaction[]> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/${userId}/transactions`);
+    if (!response.ok) throw new Error("Failed to fetch transactions");
+    return await response.json();
+  } catch (error) {
+    console.error("Fetch user transactions error:", error);
+    return [];
+  }
+};
+
+export const addTransaction = async (
+  userId: string,
+  data: Omit<Transaction, "id">
+) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/${userId}/transactions`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) throw new Error("Failed to add transaction");
+    return await response.json();
+  } catch (error) {
+    console.error("Add transaction error:", error);
+    return null;
+  }
+};
+
+export const deleteTransaction = async (
+  userId: string,
+  transactionId: string
+) => {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/${userId}/transactions/${transactionId}`,
+      { method: "DELETE" }
+    );
+
+    if (!response.ok) throw new Error("Failed to delete transaction");
+
+    console.log("Transaction deleted successfully");
+    return true;
+  } catch (error) {
+    console.error("Delete error:", error);
+    return false;
+  }
+};
+
+export const clearUserTransactions = async (userId: string) => {
+  try {
+    const res = await fetch(`${API_BASE_URL}/${userId}/transactions`);
+    if (!res.ok) throw new Error("Failed to fetch transactions");
+
+    const transactions = await res.json();
+
+    for (const t of transactions) {
+      await deleteTransaction(userId, t.id);
+      await new Promise((resolve) => setTimeout(resolve, 200)); 
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error clearing transactions:", error);
+    return false;
   }
 };

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuth } from "@/context/auth-context";
 import type { Transaction, User } from "@/types/user";
-import { updateUser } from "@/services/api";
+import { addTransaction, updateUser } from "@/services/api";
 
 export type UseDepositReturn = {
   amount: string;
@@ -64,18 +64,14 @@ export function useDeposit(): UseDepositReturn {
         date: new Date().toISOString(),
       };
 
+      await addTransaction(user.id.toString(), transaction);
+
       const updatedUser = {
         ...user,
         balance: newBalance,
-        transactions: [...user.transactions, transaction],
       };
 
-      const updatedFromServer = await updateUser(user.id, updatedUser).catch(
-        (err) => {
-          console.warn("updateUser failed, falling back to local update", err);
-          return null;
-        }
-      );
+      const updatedFromServer = await updateUser(user.id, updatedUser);
 
       if (updatedFromServer) {
         setUser(updatedFromServer);
@@ -95,7 +91,6 @@ export function useDeposit(): UseDepositReturn {
 
       setTimeout(() => {
         setShowSuccess(false);
-        navigate("/dashboard");
       }, 2000);
     } catch (err) {
       console.error("Deposit error:", err);
